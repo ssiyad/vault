@@ -69,6 +69,48 @@ def backend_get(key: str):
 	return get_backend().get(key).decode()
 
 
+def conf_probe(key: str):
+	"""Exercise the VaultConf resolver through the real frappe.conf in this process."""
+	from vault.conf import VaultConf
+
+	return {
+		"is_vaultconf": isinstance(frappe.local.conf, VaultConf),
+		"via_get": frappe.conf.get(key),
+		"via_attr": getattr(frappe.conf, key),
+	}
+
+
+def loader_probe(key: str):
+	"""Exercise the WRAPPED loader (the web/job path), not the heal branch.
+
+	frappe.init() rebuilds local.conf via frappe.config.get_site_config() on every
+	request/job; this calls that same wrapped loader directly and through the cached
+	.copy()-downcast path to prove it returns a resolving VaultConf.
+	"""
+	import frappe.config
+
+	from vault.conf import VaultConf
+
+	cfg = frappe.config.get_site_config(site_path=frappe.get_site_path(), cached=True)
+	return {
+		"loader_returns_vaultconf": isinstance(cfg, VaultConf),
+		"resolved": cfg.get(key),
+	}
+
+
+def conf_fail_closed(key: str):
+	"""Point the vault at a dead port and confirm conf.get raises (never returns None)."""
+	from vault.client import VaultClientError, clear_cache
+
+	clear_cache()
+	frappe.local.conf["vault_url"] = "http://127.0.0.1:1"  # nothing listening
+	try:
+		frappe.conf.get(key)
+		return "NO RAISE — leaked"
+	except VaultClientError:
+		return "raised VaultClientError (fail closed)"
+
+
 def set_node_enabled(node: str, enabled: int):
 	frappe.db.set_value("Vault Node", node, "enabled", int(enabled))
 	frappe.db.commit()

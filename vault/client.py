@@ -1,10 +1,11 @@
-"""The node-side runtime surface: frappe.get_secret(key).
+"""The node-side runtime surface behind vault-prefixed config values.
 
-Runs inside every client site's app code. Reads this node's token from its
-own site_config (vault_url + vault_token — secret-zero, provisioned out of
-band), calls the central vault over HTTPS and caches the value in memory
-with a short TTL so brief vault blips don't break request serving. Past the
-TTL it fails closed. Plaintext never touches disk, redis or the database.
+`vault.conf.VaultConf` calls `get_secret(key)` whenever a `site_config` value
+begins with `vault/`. It reads this node's token from its own site_config
+(vault_url + vault_token — secret-zero, provisioned out of band), calls the
+central vault over HTTPS and caches the value in memory with a short TTL so
+brief vault blips don't break request serving. Past the TTL it fails closed.
+Plaintext never touches disk, redis or the database.
 """
 
 import time

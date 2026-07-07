@@ -13,6 +13,8 @@ import click
 import frappe
 from frappe.commands import get_site, pass_context
 
+from vault.conf import VAULT_PREFIX
+
 SECRETISH = ("key", "secret", "token", "password", "passwd", "credential")
 SKIP_PREFIXES = ("db_", "vault_")
 SKIP_KEYS = {"encryption_key", "admin_password", "host_name"}
@@ -48,6 +50,8 @@ def _secret_candidates(conf: dict) -> dict[str, str]:
 		if key in SKIP_KEYS or key.startswith(SKIP_PREFIXES):
 			continue
 		if not isinstance(value, str) or not value:
+			continue
+		if value.startswith(VAULT_PREFIX):  # already migrated
 			continue
 		if any(marker in key.lower() for marker in SECRETISH):
 			candidates[key] = value
@@ -99,13 +103,13 @@ def vault_migrate(context, prefix, apply_changes):
 					f"vault refused write for {vault_key!r} (HTTP {resp.status_code}); "
 					"check the node's write policy. Config left untouched."
 				)
-			site_config[key] = {"vault": vault_key}
+			site_config[key] = f"{VAULT_PREFIX}{vault_key}"
 
 		if apply_changes:
 			with open(config_path, "w") as f:
 				json.dump(site_config, f, indent=1, sort_keys=True)
 			click.secho("Done. Plaintext values replaced with vault references.", fg="green")
-			click.echo("Update consuming code to frappe.get_secret(...) for these keys.")
+			click.echo("frappe.conf.get(...) now resolves these keys from the vault.")
 	finally:
 		frappe.destroy()
 

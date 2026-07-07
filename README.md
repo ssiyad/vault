@@ -41,23 +41,32 @@ Then, per client machine:
 bench get-app vault && bench --site siteb.example.com install-app vault
 ```
 
-In the client site's `site_config.json`:
+In the client site's `site_config.json`, set the connection and store each secret as a
+`vault/`-prefixed **reference value** (not the secret itself):
 
 ```json
 "vault_url": "https://vault.example.com",
-"vault_token": "svlt_..."
+"vault_token": "svlt_...",
+"stripe_key": "vault/siteb/stripe_key"
 ```
 
-App code then reads secrets with one line:
+App code then reads secrets through the normal config accessor — no vault-specific API:
 
 ```python
-frappe.get_secret("siteb/stripe_key")   # or: from vault.client import get_secret
+frappe.conf.get("stripe_key")   # -> the decrypted secret, fetched from the vault
+frappe.conf.get("some_plain_key")  # -> plain values are returned untouched
 ```
 
-The client caches values **in memory only** with a short TTL (default 60s), so brief
-vault outages don't break request serving; past the TTL it fails closed. Plaintext
-never touches the client's disk, database or redis. Do **not** set `vault_server`
-or the KEK variables on client machines.
+Any config value beginning with `vault/` is resolved on read: the prefix is stripped and
+the remainder (`siteb/stripe_key`) is the vault key. Values without the prefix behave
+exactly as stock Frappe. The client caches resolved values **in memory only** with a
+short TTL (default 60s), so brief vault outages don't break request serving; past the TTL
+it **fails closed** (raises rather than returning a stale or empty secret). Plaintext
+never touches the client's disk, database or redis. Do **not** set `vault_server` or the
+KEK variables on client machines.
+
+> Note: web workers cache `site_config.json` for ~60s (`frappe/config.py`), so a newly
+> added reference can take up to a minute to appear in running workers.
 
 To move existing plaintext secrets out of a client's `site_config.json`:
 
@@ -65,6 +74,10 @@ To move existing plaintext secrets out of a client's `site_config.json`:
 bench --site siteb.example.com vault-migrate            # dry run
 bench --site siteb.example.com vault-migrate --commit   # apply
 ```
+
+`--commit` pushes each detected secret to the vault and rewrites its `site_config.json`
+value in place to `vault/<node>/<key>`, so existing `frappe.conf.get(...)` calls keep
+working unchanged. Re-running is a no-op (already-referenced values are skipped).
 
 ## Rotating the master key
 
