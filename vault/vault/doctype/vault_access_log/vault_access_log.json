@@ -1,7 +1,7 @@
 {
  "actions": [],
- "autoname": "autoincrement",
- "creation": "2026-07-07 00:00:00.000000",
+ "autoname": "UUID",
+ "creation": "2026-07-07 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -57,11 +57,11 @@
  "grid_page_length": 50,
  "in_create": 1,
  "links": [],
- "modified": "2026-07-07 00:00:00.000000",
+ "modified": "2026-07-07 21:27:40.664433",
  "modified_by": "Administrator",
  "module": "Vault",
  "name": "Vault Access Log",
- "naming_rule": "Autoincrement",
+ "naming_rule": "UUID",
  "owner": "Administrator",
  "permissions": [
   {
@@ -78,6 +78,5 @@
  "row_format": "Dynamic",
  "sort_field": "creation",
  "sort_order": "DESC",
- "states": [],
- "track_changes": 0
+ "states": []
 }
