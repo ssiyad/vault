@@ -8,6 +8,24 @@ from vault.install import VAULT_ADMIN_ROLE
 
 
 class VaultSecret(Document):
+	# begin: auto-generated types
+	# This code is auto-generated. Do not modify anything in this block.
+
+	from typing import TYPE_CHECKING
+
+	if TYPE_CHECKING:
+		from frappe.types import DF
+
+		ciphertext: DF.LongText | None
+		dek_nonce: DF.Data | None
+		description: DF.SmallText | None
+		kek_version: DF.Data | None
+		secret_key: DF.Data
+		tags: DF.Data | None
+		value_nonce: DF.Data | None
+		wrapped_dek: DF.Data | None
+	# end: auto-generated types
+
 	pass
 
 
