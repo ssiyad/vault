@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "UUID",
+ "autoname": "hash",
  "creation": "2026-07-07 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -57,11 +57,11 @@
  "grid_page_length": 50,
  "in_create": 1,
  "links": [],
- "modified": "2026-07-07 21:27:40.664433",
+ "modified": "2026-07-08 19:08:48.679254",
  "modified_by": "Administrator",
  "module": "Vault",
  "name": "Vault Access Log",
- "naming_rule": "UUID",
+ "naming_rule": "Random",
  "owner": "Administrator",
  "permissions": [
   {
