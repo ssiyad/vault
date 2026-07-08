@@ -12,6 +12,7 @@ use_json_request_body = True
 # Install / migrate
 # ------------------
 
+before_install = "vault.install.before_install"
 after_install = "vault.install.after_install"
 after_migrate = "vault.install.after_migrate"
 

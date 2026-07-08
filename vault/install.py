@@ -15,6 +15,12 @@ def ensure_roles():
 		).insert(ignore_permissions=True)
 
 
+def before_install():
+	# Doctype permissions reference the Vault Admin role; create it before the
+	# doctypes sync so a clean install never imports a dangling role reference.
+	ensure_roles()
+
+
 def after_install():
 	ensure_roles()
 
